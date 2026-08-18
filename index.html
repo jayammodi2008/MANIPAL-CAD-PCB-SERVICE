@@ -1,127 +1,702 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manipal Hackathon Design Studio</title>
-    <script src="https://tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manipal CAD + PCB Studio — Renders for your pitch deck</title>
+<meta name="description" content="Flat-rate CAD enclosure and PCB 3D renders for hackathon and pitch-deck projects, built by a 1st-sem Manipal engineering student.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a2240;
+    --navy-mid:#123a66;
+    --navy-line:#2c5f95;
+    --cyan:#8fd6e8;
+    --cyan-dim:#5fa9c2;
+    --vellum:#ece6d6;
+    --vellum-line:#d8cfb6;
+    --ink:#111820;
+    --amber:#ff9f1c;
+    --amber-ink:#5c3a00;
+    --green-ok:#4caf6e;
+    --red-err:#e2564f;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+    --font-body:'Inter', sans-serif;
+    --radius:2px;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    font-family:var(--font-body);
+    background:var(--navy-deep);
+    color:var(--cyan);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; }
+  ::selection{ background:var(--amber); color:var(--navy-deep); }
+
+  :focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:3px;
+  }
+
+  .wrap{ max-width:1100px; margin:0 auto; padding:0 24px; }
+
+  /* ---------- blueprint grid background ---------- */
+  .blueprint-bg{
+    background-image:
+      linear-gradient(var(--navy-mid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--navy-mid) 1px, transparent 1px);
+    background-size:36px 36px;
+    background-position:-1px -1px;
+    position:relative;
+  }
+  .vellum-bg{
+    background-color:var(--vellum);
+    background-image:
+      linear-gradient(var(--vellum-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--vellum-line) 1px, transparent 1px);
+    background-size:28px 28px;
+    color:var(--ink);
+  }
+
+  /* ---------- fiducial corner marks (PCB alignment marks) ---------- */
+  .fiducials{ position:relative; }
+  .fiducials::before,.fiducials::after,
+  .fiducials .fid-tl,.fiducials .fid-tr{
+    content:"";
+    position:absolute;
+    width:22px; height:22px;
+    pointer-events:none;
+  }
+  .fiducials::before{ top:14px; left:14px; border-top:1.5px solid currentColor; border-left:1.5px solid currentColor; opacity:.55; }
+  .fiducials::after{ bottom:14px; right:14px; border-bottom:1.5px solid currentColor; border-right:1.5px solid currentColor; opacity:.55; }
+  .fiducials .fid-tl{ top:14px; right:14px; border-top:1.5px solid currentColor; border-right:1.5px solid currentColor; opacity:.55; }
+  .fiducials .fid-tr{ bottom:14px; left:14px; border-bottom:1.5px solid currentColor; border-left:1.5px solid currentColor; opacity:.55; }
+
+  /* ---------- dimension-line section dividers ---------- */
+  .dim-divider{
+    display:flex; align-items:center; gap:14px;
+    margin:0 0 46px;
+    color:var(--cyan-dim);
+  }
+  .dim-divider::before,.dim-divider::after{
+    content:""; flex:1; height:1px; background:var(--navy-line);
+    position:relative;
+  }
+  .dim-divider::before{ margin-right:0; }
+  .vellum-bg .dim-divider{ color:#8a7f5f; }
+  .vellum-bg .dim-divider::before,.vellum-bg .dim-divider::after{ background:var(--vellum-line); }
+  .dim-label{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:block;
+    margin-bottom:10px;
+  }
+
+  h1,h2,h3{ font-family:var(--font-display); font-weight:700; line-height:1.08; letter-spacing:-.01em; }
+
+  section{ padding:88px 0; position:relative; }
+  @media(max-width:640px){ section{ padding:60px 0; } }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,34,64,.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--navy-line);
+  }
+  header .bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px;
+    max-width:1100px; margin:0 auto;
+  }
+  .brand{
+    display:flex; flex-direction:column; gap:2px;
+    font-family:var(--font-mono);
+    text-decoration:none;
+    color:var(--cyan);
+  }
+  .brand strong{
+    font-family:var(--font-display);
+    font-size:17px;
+    letter-spacing:.01em;
+    color:#fff;
+  }
+  .brand span{ font-size:10px; letter-spacing:.14em; color:var(--cyan-dim); text-transform:uppercase; }
+
+  nav.links{ display:flex; gap:28px; align-items:center; }
+  nav.links a{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    text-decoration:none;
+    color:var(--cyan-dim);
+    transition:color .15s ease;
+  }
+  nav.links a:hover{ color:var(--amber); }
+  .nav-cta{
+    border:1px solid var(--amber);
+    color:var(--amber) !important;
+    padding:7px 14px;
+    border-radius:var(--radius);
+  }
+  .nav-toggle{ display:none; background:none; border:1px solid var(--navy-line); color:var(--cyan); font-family:var(--font-mono); font-size:12px; padding:8px 10px; border-radius:var(--radius); }
+  @media(max-width:720px){
+    nav.links{ display:none; }
+    .nav-toggle{ display:block; }
+    nav.links.open{
+      display:flex; flex-direction:column; align-items:flex-start; gap:16px;
+      position:absolute; top:100%; left:0; right:0;
+      background:var(--navy-deep); border-bottom:1px solid var(--navy-line);
+      padding:20px 24px;
+    }
+  }
+
+  /* ---------- hero ---------- */
+  .hero{ padding-top:90px; padding-bottom:100px; }
+  .stamp{
+    display:inline-flex; align-items:center; gap:9px;
+    border:1px solid var(--amber);
+    color:var(--amber);
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:7px 12px;
+    border-radius:20px;
+    margin-bottom:28px;
+  }
+  .stamp .dot{ width:7px; height:7px; border-radius:50%; background:var(--amber); animation:pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  .hero h1{
+    font-size:clamp(34px,6vw,60px);
+    color:#fff;
+    max-width:14ch;
+    margin-bottom:22px;
+  }
+  .hero h1 em{ font-style:normal; color:var(--cyan); }
+  .hero p.lede{
+    font-size:17px;
+    max-width:52ch;
+    color:#c7dbe8;
+    margin-bottom:34px;
+  }
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:56px; }
+  .btn{
+    font-family:var(--font-mono);
+    font-size:13px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    text-decoration:none;
+    padding:14px 22px;
+    border-radius:var(--radius);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn-primary{ background:var(--amber); color:var(--amber-ink); font-weight:600; box-shadow:0 0 0 rgba(255,159,28,0); }
+  .btn-primary:hover{ box-shadow:0 6px 18px rgba(255,159,28,.25); }
+  .btn-ghost{ border:1px solid var(--navy-line); color:var(--cyan); }
+  .btn-ghost:hover{ border-color:var(--cyan); }
+
+  .coord-readout{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--cyan-dim);
+    letter-spacing:.05em;
+    border-top:1px solid var(--navy-line);
+    padding-top:16px;
+    max-width:420px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .coord-readout b{ color:var(--cyan); font-weight:500; }
+
+  /* ---------- services ---------- */
+  .svc-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:22px; }
+  @media(max-width:720px){ .svc-grid{ grid-template-columns:1fr; } }
+  .svc-card{
+    border:1px solid var(--navy-line);
+    padding:30px 28px;
+    border-radius:var(--radius);
+    position:relative;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .svc-card:hover{ border-color:var(--cyan); transform:translateY(-3px); }
+  .svc-card .tag{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.1em;
+    color:var(--cyan-dim); text-transform:uppercase; margin-bottom:14px; display:block;
+  }
+  .svc-card h3{ font-size:22px; color:#fff; margin-bottom:10px; }
+  .svc-card .price{
+    font-family:var(--font-mono); font-size:26px; color:var(--amber); font-weight:600;
+    margin-bottom:16px;
+  }
+  .svc-card p{ color:#b9d0e0; font-size:14.5px; margin-bottom:20px; }
+  .spec-list{ list-style:none; border-top:1px dashed var(--navy-line); padding-top:14px; }
+  .spec-list li{
+    display:flex; justify-content:space-between;
+    font-family:var(--font-mono); font-size:12px; color:var(--cyan-dim);
+    padding:4px 0;
+  }
+  .spec-list li span:last-child{ color:var(--cyan); }
+
+  /* ---------- process ---------- */
+  .process-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  @media(max-width:760px){ .process-grid{ grid-template-columns:1fr; } }
+  .step{ border-left:1px solid var(--navy-line); padding-left:20px; }
+  .step .num{ font-family:var(--font-mono); color:var(--amber); font-size:13px; margin-bottom:10px; display:block; }
+  .step h3{ font-size:18px; color:#fff; margin-bottom:8px; }
+  .step p{ font-size:14px; color:#b9d0e0; }
+
+  /* ---------- portfolio (vellum) ---------- */
+  #portfolio .wrap > .dim-divider{ margin-top:0; }
+  .port-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; }
+  .sheet{
+    background:#f6f2e6;
+    border:1px solid var(--vellum-line);
+    position:relative;
+  }
+  .sheet-img{ aspect-ratio:4/3; overflow:hidden; border-bottom:1px solid var(--vellum-line); background:#e3ddc9; }
+  .sheet-img img{ width:100%; height:100%; object-fit:cover; }
+  .sheet-body{ padding:20px 20px 22px; }
+  .sheet-no{ font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; color:#8a7f5f; margin-bottom:6px; display:block; }
+  .sheet h3{ font-size:18px; margin-bottom:8px; }
+  .sheet p{ font-size:13.5px; color:#494332; margin-bottom:14px; }
+  .sheet-tags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .sheet-tags span{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.04em;
+    border:1px solid #b9ae8d; color:#5c5333; padding:3px 8px; text-transform:uppercase;
+  }
+  .sheet-empty{
+    border:1px dashed var(--vellum-line);
+    display:flex; align-items:center; justify-content:center;
+    min-height:220px; text-align:center; padding:24px;
+  }
+  .sheet-empty p{ font-family:var(--font-mono); font-size:12.5px; color:#8a7f5f; line-height:1.7; }
+
+  /* ---------- order (work-order ticket) ---------- */
+  .ticket{
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    border:1px solid var(--navy-line);
+    background:var(--navy-mid);
+  }
+  @media(max-width:760px){ .ticket{ grid-template-columns:1fr; } }
+
+  .ticket-form{ padding:36px; }
+  .ticket-stub{
+    padding:36px 30px;
+    background:rgba(0,0,0,.15);
+    border-left:1px dashed var(--navy-line);
+    display:flex; flex-direction:column;
+    justify-content:space-between;
+  }
+  @media(max-width:760px){
+    .ticket-stub{ border-left:none; border-top:1px dashed var(--navy-line); }
+  }
+
+  .field{ margin-bottom:20px; }
+  .field label{
+    display:block; font-family:var(--font-mono); font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--cyan-dim); margin-bottom:8px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    background:var(--navy-deep);
+    border:1px solid var(--navy-line);
+    color:#fff;
+    font-family:var(--font-body);
+    font-size:14.5px;
+    padding:12px 13px;
+    border-radius:var(--radius);
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:#5b7a95; }
+  .field textarea{ resize:vertical; min-height:110px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:500px){ .field-row{ grid-template-columns:1fr; } }
+  .hp{ position:absolute; left:-9999px; opacity:0; }
+
+  .stub-label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:var(--cyan-dim); text-transform:uppercase; margin-bottom:6px; }
+  .stub-value{ font-family:var(--font-display); font-size:22px; color:#fff; margin-bottom:22px; }
+  .stub-price{ font-family:var(--font-mono); font-size:34px; color:var(--amber); font-weight:600; }
+  .stub-note{ font-size:13px; color:#a9c4d6; margin-top:18px; line-height:1.6; }
+  .stub-whatsapp{ margin-top:22px; }
+
+  #formMsg{ margin-top:16px; font-family:var(--font-mono); font-size:13px; display:none; padding:12px 14px; border-radius:var(--radius); }
+  #formMsg.ok{ display:block; background:rgba(76,175,110,.12); color:var(--green-ok); border:1px solid var(--green-ok); }
+  #formMsg.err{ display:block; background:rgba(226,86,79,.12); color:var(--red-err); border:1px solid var(--red-err); }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--navy-line); padding:40px 0; }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  footer p{ font-family:var(--font-mono); font-size:12px; color:var(--cyan-dim); }
+  footer .foot-links{ display:flex; gap:20px; }
+  footer a{ font-family:var(--font-mono); font-size:12px; text-decoration:none; color:var(--cyan-dim); }
+  footer a:hover{ color:var(--amber); }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(16px); transition:opacity .5s ease, transform .5s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  @media(prefers-reduced-motion:reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .stamp .dot{ animation:none; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans antialiased">
+<body>
 
-    <!-- Header Section -->
-    <header class="bg-gray-800 border-b border-gray-700 py-6 sticky top-0 z-50 shadow-md">
-        <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight text-teal-400">⚡ 1st Sem Design Studio</h1>
-            <a href="#order" class="bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-4 py-2 rounded-md text-sm transition">Book Render</a>
+<header>
+  <div class="bar">
+    <a href="#top" class="brand">
+      <strong>MANIPAL CAD+PCB STUDIO</strong>
+      <span>1st Sem Engineering · Student Studio</span>
+    </a>
+    <nav class="links" id="navLinks">
+      <a href="#services">Services</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#order">Order</a>
+      <a href="#order" class="nav-cta">Start an order</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">MENU</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero blueprint-bg fiducials">
+    <span class="fid-tl"></span><span class="fid-tr"></span>
+    <div class="wrap">
+      <span class="stamp"><span class="dot"></span>Accepting orders this week</span>
+      <h1>Your idea, rendered <em>pitch-ready.</em></h1>
+      <p class="lede">Send a sketch, a schematic, or just a description. I turn it into a clean 3D CAD enclosure or PCB render your pitch deck or demo table can actually show off — flat rate, fast turnaround.</p>
+      <div class="cta-row">
+        <a href="#order" class="btn btn-primary">Start an order →</a>
+        <a href="https://wa.me/91XXXXXXXXXX" target="_blank" rel="noopener" class="btn btn-ghost">💬 Message on WhatsApp</a>
+      </div>
+      <div class="coord-readout">
+        <span>CURSOR&nbsp; X:<b id="cx">000</b>&nbsp; Y:<b id="cy">000</b></span>
+        <span>STUDIO STATUS: <b>OPEN</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="blueprint-bg">
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 01 — Deliverables</span></div>
+      <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:20ch;margin-bottom:40px;" class="reveal">Two renders. One flat rate each.</h2>
+      <div class="svc-grid">
+        <div class="svc-card reveal">
+          <span class="tag">Mechanical</span>
+          <h3>CAD Enclosure Render</h3>
+          <div class="price">₹150</div>
+          <p>A rough enclosure idea becomes a clean, presentation-ready 3D casing — good for IoT boxes, robot chassis, and device housings.</p>
+          <ul class="spec-list">
+            <li><span>Output</span><span>PNG render, STEP on request</span></li>
+            <li><span>Turnaround</span><span>24–48 hrs</span></li>
+            <li><span>Revisions</span><span>1 included</span></li>
+          </ul>
         </div>
-    </header>
+        <div class="svc-card reveal">
+          <span class="tag">Electronics</span>
+          <h3>PCB 3D Layout</h3>
+          <div class="price">₹150</div>
+          <p>Your schematic becomes an industrial-look 3D board render — built to make judges and investors believe the hardware is real.</p>
+          <ul class="spec-list">
+            <li><span>Output</span><span>PNG render, multiple angles</span></li>
+            <li><span>Turnaround</span><span>24–48 hrs</span></li>
+            <li><span>Revisions</span><span>1 included</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <main class="max-w-4xl mx-auto px-4 py-8 space-y-12">
+  <!-- PROCESS -->
+  <section class="blueprint-bg">
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 02 — Process</span></div>
+      <div class="process-grid">
+        <div class="step reveal">
+          <span class="num">01</span>
+          <h3>Send your idea</h3>
+          <p>Fill the order form or message on WhatsApp with a sketch, schematic, or just a description of what you need.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">02</span>
+          <h3>Studio builds the render</h3>
+          <p>Work starts within 24 hours. You get a quick check-in if anything about the idea needs clarifying.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">03</span>
+          <h3>You get it back</h3>
+          <p>Final render lands in your inbox or WhatsApp, ready to drop straight into a deck or demo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Real-Time Queue Component -->
-        <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <span>⏳</span> Live Hackathon Work Queue
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-center">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Current Wait Time</p>
-                    <p id="wait-time" class="text-3xl font-bold text-amber-400 mt-1">Loading...</p>
-                </div>
-                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-center">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Active Jobs Ahead</p>
-                    <p id="jobs-ahead" class="text-3xl font-bold text-teal-400 mt-1">Loading...</p>
-                </div>
-                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-center">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Slots Remaining</p>
-                    <p id="slots-left" class="text-3xl font-bold text-emerald-400 mt-1">Loading...</p>
-                </div>
+  <!-- PORTFOLIO -->
+  <section id="portfolio" class="vellum-bg fiducials">
+    <span class="fid-tl"></span><span class="fid-tr"></span>
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 03 — Portfolio</span></div>
+      <h2 style="font-size:clamp(24px,3.4vw,34px);max-width:20ch;margin-bottom:40px;" class="reveal">Sheets from past jobs.</h2>
+      <div class="port-grid" id="portGrid"></div>
+    </div>
+  </section>
+
+  <!-- ORDER -->
+  <section id="order" class="blueprint-bg">
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 04 — Order</span></div>
+      <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:22ch;margin-bottom:40px;" class="reveal">Open a work order.</h2>
+
+      <form class="ticket reveal" id="orderForm">
+        <div class="ticket-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input type="text" id="name" name="name" placeholder="Full name" required>
             </div>
-            <p class="text-xs text-gray-400 italic text-center">
-                *Tip: We close submissions 4 hours before pitch decks are due. Place orders early!
-            </p>
-        </section>
-
-        <!-- Dynamic Menu Grid -->
-        <section class="space-y-4">
-            <h2 class="text-xl font-bold text-gray-100">🎯 Flat-Rate Deliverables</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-bold text-lg text-gray-200">CAD Enclosure Render</h3>
-                        <span class="text-teal-400 font-bold bg-teal-950/50 px-2 py-0.5 rounded text-sm">₹150</span>
-                    </div>
-                    <p class="text-sm text-gray-400 mt-2">Clean, custom outer casings or structural assemblies. Perfect for IoT, robotics, and device prototypes.</p>
-                </div>
-                <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-bold text-lg text-gray-200">PCB 3D Layout</h3>
-                        <span class="text-teal-400 font-bold bg-teal-950/50 px-2 py-0.5 rounded text-sm">₹150</span>
-                    </div>
-                    <p class="text-sm text-gray-400 mt-2">Your schematic transformed into an industrial 3D circuit board render to showcase advanced engineering.</p>
-                </div>
+            <div class="field">
+              <label for="contact">Email or WhatsApp number</label>
+              <input type="text" id="contact" name="contact" placeholder="you@example.com or +91…" required>
             </div>
-        </section>
+          </div>
 
-        <!-- Live Showcase Block -->
-        <section class="space-y-4">
-            <h2 class="text-xl font-bold text-gray-100">📂 Active Portfolio</h2>
-            <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden p-6 flex flex-col md:flex-row gap-6 items-center">
-                <div class="w-full md:w-1/3 flex justify-center bg-gray-900 rounded-lg p-4 border border-gray-700/50">
-                    <img src="shock_absorber.png" alt="Shock Absorber Model" class="max-h-64 object-contain">
-                </div>
-                <div class="w-full md:w-2/3 space-y-3">
-                    <h3 class="text-lg font-bold text-teal-400">Mechanical Shock Absorber Assembly</h3>
-                    <p class="text-sm text-gray-400 leading-relaxed">
-                        This is an example of our blueprint-style presentation rendering. Built using precise multi-part constraints, clean hidden-edge removal, and ambient occlusion mappings. This asset structure adds massive structural weight to physical hardware pitches.
-                    </p>
-                    <div class="flex flex-wrap gap-2 text-xs font-mono text-gray-400">
-                        <span class="bg-gray-700/50 px-2 py-1 rounded">Onshape Workflow</span>
-                        <span class="bg-gray-700/50 px-2 py-1 rounded">Perspective Scale</span>
-                        <span class="bg-gray-700/50 px-2 py-1 rounded">Pitch Ready</span>
-                    </div>
-                </div>
+          <div class="field">
+            <label for="service">What do you need?</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Select a service</option>
+              <option value="CAD Enclosure Render">CAD Enclosure Render — ₹150</option>
+              <option value="PCB 3D Layout">PCB 3D Layout — ₹150</option>
+              <option value="Not sure yet">Not sure yet — help me decide</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="idea">Describe your idea</label>
+            <textarea id="idea" name="idea" placeholder="What's the project? Rough dimensions, components, references — anything helps." required></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="deadline">Deadline (optional)</label>
+              <input type="date" id="deadline" name="deadline">
             </div>
-        </section>
-
-        <!-- Call to Action Footer -->
-        <section id="order" class="bg-gradient-to-br from-teal-900/30 to-gray-800 border border-teal-500/20 rounded-xl p-8 text-center space-y-4">
-            <h2 class="text-xl font-bold text-gray-100">Ready to boost your Pitch Deck?</h2>
-            <p class="text-sm text-gray-400 max-w-md mx-auto">Skip the line and ping us directly on WhatsApp to submit your baseline hand-sketches or project ideas.</p>
-            <div class="pt-2">
-                <a href="https://wa.me" target="_blank" class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition shadow-md shadow-emerald-950/20">
-                    💬 Ping on WhatsApp
-                </a>
+            <div class="field">
+              <label for="reference">Reference link (optional)</label>
+              <input type="url" id="reference" name="reference" placeholder="Drive folder, sketch, schematic…">
             </div>
-        </section>
+          </div>
 
-    </main>
+          <!-- honeypot -->
+          <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off">
 
-    <!-- Queue Management Engine Script -->
-    <script>
-        // REPLACE WITH YOUR PUBLISHED WEB APPLICATION APP DISPLAY ENDPOINT STRING URL
-        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxLI2Yg4iEPWzML0e08xMnuJmHYrsnq1OmHSdmY2JGGvukucHWNZgieQ66jc62FCIbJqA/exec";
+          <button type="submit" class="btn btn-primary" id="submitBtn" style="border:none;cursor:pointer;">Submit work order →</button>
+          <div id="formMsg"></div>
+        </div>
 
-        async function fetchQueueData() {
-            try {
-                const response = await fetch(SHEET_API_URL);
-                const data = await response.json();
-                
-                document.getElementById('wait-time').innerText = data.waitTime || "0 mins";
-                document.getElementById('jobs-ahead').innerText = data.jobsAhead || "0";
-                document.getElementById('slots-left').innerText = data.slotsLeft || "Available";
-            } catch (error) {
-                console.error("Queue syncing error:", error);
-                document.getElementById('wait-time').innerText = "15 mins";
-                document.getElementById('jobs-ahead').innerText = "0";
-                document.getElementById('slots-left').innerText = "Available";
-            }
-        }
+        <div class="ticket-stub">
+          <div>
+            <div class="stub-label">Service</div>
+            <div class="stub-value" id="stubService">—</div>
+            <div class="stub-label">Rate</div>
+            <div class="stub-price" id="stubPrice">₹150</div>
+          </div>
+          <div>
+            <p class="stub-note">Flat rate per render. Payment details are confirmed after your order is reviewed — nothing is charged automatically here.</p>
+            <div class="stub-whatsapp">
+              <a href="https://wa.me/91XXXXXXXXXX" target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%;justify-content:center;">💬 Or just WhatsApp it</a>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
 
-        // Fetch data immediately when the site initializes
-        fetchQueueData();
-        // Periodically refresh the data sync index pipeline every 60 seconds
-        setInterval(fetchQueueData, 60000);
-    </script>
+</main>
+
+<footer class="blueprint-bg">
+  <div class="wrap">
+    <p>Independent student service · Manipal · not affiliated with the institute</p>
+    <div class="foot-links">
+      <a href="https://wa.me/91XXXXXXXXXX" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#order">Order</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* =========================================================
+     CONFIG — edit these two lines
+  ========================================================= */
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLI2Yg4iEPWzML0e08xMnuJmHYrsnq1OmHSdmY2JGGvukucHWNZgieQ66jc62FCIbJqA/exec";
+
+  /* =========================================================
+     PORTFOLIO — add a new work by adding an object here.
+     image: any URL (host it in this repo, e.g. /assets/your-image.png)
+  ========================================================= */
+  const portfolio = [
+    {
+      sheetNo: "SHEET 01",
+      title: "Mechanical Shock Absorber Assembly",
+      category: "CAD Enclosure",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/shock_absorber.png",
+      blurb: "Blueprint-style presentation render built with precise multi-part constraints, clean hidden-edge removal, and ambient occlusion — the kind of asset that adds weight to a hardware pitch.",
+      tags: ["Onshape", "Multi-part", "Pitch-ready"]
+    }
+    // Add more entries here, e.g.:
+    // {
+    //   sheetNo: "SHEET 02",
+    //   title: "Your project title",
+    //   category: "PCB 3D Layout",
+    //   image: "assets/portfolio/your-image.png",
+    //   blurb: "One or two sentences about the render.",
+    //   tags: ["Tag1", "Tag2"]
+    // }
+  ];
+
+  const portGrid = document.getElementById('portGrid');
+  portfolio.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'sheet reveal';
+    el.innerHTML = `
+      <div class="sheet-img"><img src="${item.image}" alt="${item.title}" loading="lazy"></div>
+      <div class="sheet-body">
+        <span class="sheet-no">${item.sheetNo} · ${item.category}</span>
+        <h3>${item.title}</h3>
+        <p>${item.blurb}</p>
+        <div class="sheet-tags">${item.tags.map(t => `<span>${t}</span>`).join('')}</div>
+      </div>`;
+    portGrid.appendChild(el);
+  });
+  const emptySlot = document.createElement('div');
+  emptySlot.className = 'sheet sheet-empty reveal';
+  emptySlot.innerHTML = `<p>MORE SHEETS<br>ADDED AS JOBS<br>ARE COMPLETED</p>`;
+  portGrid.appendChild(emptySlot);
+
+  /* ---------- mobile nav ---------- */
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+  });
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+  /* ---------- coordinate readout ---------- */
+  const cx = document.getElementById('cx');
+  const cy = document.getElementById('cy');
+  const heroSection = document.querySelector('.hero');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches === false) {
+    heroSection.addEventListener('mousemove', e => {
+      const r = heroSection.getBoundingClientRect();
+      cx.textContent = String(Math.max(0, Math.round(e.clientX - r.left))).padStart(3,'0');
+      cy.textContent = String(Math.max(0, Math.round(e.clientY - r.top))).padStart(3,'0');
+    });
+  }
+
+  /* ---------- scroll reveal ---------- */
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+
+  /* ---------- live ticket stub ---------- */
+  const serviceSelect = document.getElementById('service');
+  const stubService = document.getElementById('stubService');
+  const stubPrice = document.getElementById('stubPrice');
+  const priceMap = {
+    "CAD Enclosure Render": "₹150",
+    "PCB 3D Layout": "₹150",
+    "Not sure yet": "TBD"
+  };
+  serviceSelect.addEventListener('change', () => {
+    stubService.textContent = serviceSelect.value || "—";
+    stubPrice.textContent = priceMap[serviceSelect.value] || "₹150";
+  });
+
+  /* ---------- order form submit ---------- */
+  const form = document.getElementById('orderForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // honeypot check
+    if (form.company.value) return;
+
+    const payload = {
+      name: form.name.value.trim(),
+      contact: form.contact.value.trim(),
+      service: form.service.value,
+      idea: form.idea.value.trim(),
+      deadline: form.deadline.value,
+      reference: form.reference.value.trim(),
+      submittedAt: new Date().toISOString()
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending…";
+    formMsg.className = ''; formMsg.style.display = 'none';
+
+    try {
+      // Apps Script /exec does not return CORS headers, so we fire in no-cors
+      // mode. The request still reaches the script and the row still gets
+      // written — we just can't read a response back.
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+
+      formMsg.textContent = "Order received — I'll get back to you soon.";
+      formMsg.className = 'ok';
+      form.reset();
+      stubService.textContent = "—";
+      stubPrice.textContent = "₹150";
+    } catch (err) {
+      formMsg.textContent = "Something went wrong. Please message on WhatsApp instead.";
+      formMsg.className = 'err';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit work order →";
+    }
+  });
+</script>
 </body>
 </html>
