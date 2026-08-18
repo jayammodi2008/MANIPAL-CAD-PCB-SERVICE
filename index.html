@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipal Hackathon Design Studio</title>
+    <script src="https://tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans antialiased">
+
+    <!-- Header Section -->
+    <header class="bg-gray-800 border-b border-gray-700 py-6 sticky top-0 z-50 shadow-md">
+        <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight text-teal-400">⚡ 1st Sem Design Studio</h1>
+            <a href="#order" class="bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-4 py-2 rounded-md text-sm transition">Book Render</a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 space-y-12">
+
+        <!-- Real-Time Queue Component -->
+        <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+                <span>⏳</span> Live Hackathon Work Queue
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Current Wait Time</p>
+                    <p id="wait-time" class="text-3xl font-bold text-amber-400 mt-1">Loading...</p>
+                </div>
+                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Active Jobs Ahead</p>
+                    <p id="jobs-ahead" class="text-3xl font-bold text-teal-400 mt-1">Loading...</p>
+                </div>
+                <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Slots Remaining</p>
+                    <p id="slots-left" class="text-3xl font-bold text-emerald-400 mt-1">Loading...</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 italic text-center">
+                *Tip: We close submissions 4 hours before pitch decks are due. Place orders early!
+            </p>
+        </section>
+
+        <!-- Dynamic Menu Grid -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold text-gray-100">🎯 Flat-Rate Deliverables</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-bold text-lg text-gray-200">CAD Enclosure Render</h3>
+                        <span class="text-teal-400 font-bold bg-teal-950/50 px-2 py-0.5 rounded text-sm">₹150</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">Clean, custom outer casings or structural assemblies. Perfect for IoT, robotics, and device prototypes.</p>
+                </div>
+                <div class="bg-gray-800 p-5 rounded-lg border border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-bold text-lg text-gray-200">PCB 3D Layout</h3>
+                        <span class="text-teal-400 font-bold bg-teal-950/50 px-2 py-0.5 rounded text-sm">₹150</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">Your schematic transformed into an industrial 3D circuit board render to showcase advanced engineering.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Showcase Block -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold text-gray-100">📂 Active Portfolio</h2>
+            <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden p-6 flex flex-col md:flex-row gap-6 items-center">
+                <div class="w-full md:w-1/3 flex justify-center bg-gray-900 rounded-lg p-4 border border-gray-700/50">
+                    <img src="shock_absorber.png" alt="Shock Absorber Model" class="max-h-64 object-contain">
+                </div>
+                <div class="w-full md:w-2/3 space-y-3">
+                    <h3 class="text-lg font-bold text-teal-400">Mechanical Shock Absorber Assembly</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        This is an example of our blueprint-style presentation rendering. Built using precise multi-part constraints, clean hidden-edge removal, and ambient occlusion mappings. This asset structure adds massive structural weight to physical hardware pitches.
+                    </p>
+                    <div class="flex flex-wrap gap-2 text-xs font-mono text-gray-400">
+                        <span class="bg-gray-700/50 px-2 py-1 rounded">Onshape Workflow</span>
+                        <span class="bg-gray-700/50 px-2 py-1 rounded">Perspective Scale</span>
+                        <span class="bg-gray-700/50 px-2 py-1 rounded">Pitch Ready</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Footer -->
+        <section id="order" class="bg-gradient-to-br from-teal-900/30 to-gray-800 border border-teal-500/20 rounded-xl p-8 text-center space-y-4">
+            <h2 class="text-xl font-bold text-gray-100">Ready to boost your Pitch Deck?</h2>
+            <p class="text-sm text-gray-400 max-w-md mx-auto">Skip the line and ping us directly on WhatsApp to submit your baseline hand-sketches or project ideas.</p>
+            <div class="pt-2">
+                <a href="https://wa.me" target="_blank" class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition shadow-md shadow-emerald-950/20">
+                    💬 Ping on WhatsApp
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Queue Management Engine Script -->
+    <script>
+        // REPLACE WITH YOUR PUBLISHED WEB APPLICATION APP DISPLAY ENDPOINT STRING URL
+        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxLI2Yg4iEPWzML0e08xMnuJmHYrsnq1OmHSdmY2JGGvukucHWNZgieQ66jc62FCIbJqA/exec";
+
+        async function fetchQueueData() {
+            try {
+                const response = await fetch(SHEET_API_URL);
+                const data = await response.json();
+                
+                document.getElementById('wait-time').innerText = data.waitTime || "0 mins";
+                document.getElementById('jobs-ahead').innerText = data.jobsAhead || "0";
+                document.getElementById('slots-left').innerText = data.slotsLeft || "Available";
+            } catch (error) {
+                console.error("Queue syncing error:", error);
+                document.getElementById('wait-time').innerText = "15 mins";
+                document.getElementById('jobs-ahead').innerText = "0";
+                document.getElementById('slots-left').innerText = "Available";
+            }
+        }
+
+        // Fetch data immediately when the site initializes
+        fetchQueueData();
+        // Periodically refresh the data sync index pipeline every 60 seconds
+        setInterval(fetchQueueData, 60000);
+    </script>
+</body>
+</html>
