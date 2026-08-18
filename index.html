@@ -245,7 +245,7 @@
     position:relative;
     transition:border-color .15s ease, transform .15s ease;
   }
-  .svc-card:hover{ border-color:var(--cyan); transform:translateY(-3px); }
+  .svc-card:hover{ border-color:var(--cyan); transform:translateY(-3px); box-shadow:0 14px 34px rgba(143,214,232,.1); }
   .svc-card .tag{
     font-family:var(--font-mono); font-size:11px; letter-spacing:.1em;
     color:var(--cyan-dim); text-transform:uppercase; margin-bottom:14px; display:block;
@@ -264,6 +264,57 @@
   }
   .spec-list li span:last-child{ color:var(--cyan); }
 
+  /* ---------- glow accents & decorative graphic ---------- */
+  .glow-blob{
+    position:absolute; border-radius:50%; filter:blur(90px);
+    opacity:.22; pointer-events:none; z-index:0;
+  }
+  .hero-deco{
+    position:absolute; right:-30px; top:50%; transform:translateY(-50%);
+    width:380px; height:380px; color:var(--cyan); opacity:.16;
+    pointer-events:none; z-index:0;
+  }
+  @media(max-width:980px){ .hero-deco{ display:none; } }
+
+  .scan-line{
+    position:absolute; left:0; right:0; height:1px; top:0;
+    background:linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity:.5; animation:scan 6s linear infinite; pointer-events:none; z-index:0;
+  }
+  @keyframes scan{ 0%{ top:0%; } 100%{ top:100%; } }
+
+  .hero h1 em{
+    background:linear-gradient(90deg,var(--cyan),#dff5fb);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .btn-primary{ box-shadow:0 0 26px rgba(255,159,28,.16); }
+  .btn-primary:hover{ box-shadow:0 10px 28px rgba(255,159,28,.32); }
+
+  /* ---------- why it matters ---------- */
+  .section-sub{ font-size:15.5px; color:#a9c4d6; max-width:60ch; margin-bottom:40px; }
+  .why-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-bottom:44px; position:relative; z-index:1; }
+  @media(max-width:760px){ .why-grid{ grid-template-columns:1fr; } }
+  .why-card{
+    border:1px solid var(--navy-line); padding:28px 26px; border-radius:var(--radius);
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .why-card:hover{ border-color:var(--cyan); transform:translateY(-3px); box-shadow:0 14px 34px rgba(143,214,232,.1); }
+  .why-icon{
+    width:42px; height:42px; border:1px solid var(--amber); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--amber); margin-bottom:18px;
+  }
+  .why-icon svg{ width:20px; height:20px; }
+  .why-card h3{ font-size:18px; color:#fff; margin-bottom:10px; }
+  .why-card p{ font-size:14px; color:#b9d0e0; }
+
+  .callout{
+    display:flex; gap:16px; align-items:flex-start;
+    border-top:1px dashed var(--navy-line); padding-top:26px; position:relative; z-index:1;
+  }
+  .callout-tick{ width:26px; height:1px; background:var(--amber); margin-top:14px; flex-shrink:0; }
+  .callout p{ font-family:var(--font-display); font-size:clamp(18px,2.4vw,22px); color:#fff; max-width:44ch; line-height:1.35; }
+  .callout cite{ display:block; font-style:normal; font-family:var(--font-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan-dim); margin-top:12px; }
+
   /* ---------- process ---------- */
   .process-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
   @media(max-width:760px){ .process-grid{ grid-template-columns:1fr; } }
@@ -280,8 +331,15 @@
     border:1px solid var(--vellum-line);
     position:relative;
   }
+  .sheet{ transition:transform .2s ease, box-shadow .2s ease; }
+  .sheet:hover{ transform:translateY(-3px); box-shadow:0 14px 30px rgba(0,0,0,.12); }
   .sheet-img{ aspect-ratio:4/3; overflow:hidden; border-bottom:1px solid var(--vellum-line); background:#e3ddc9; }
-  .sheet-img img{ width:100%; height:100%; object-fit:cover; }
+  .sheet-img img{ width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+  .sheet:hover .sheet-img img{ transform:scale(1.045); }
+  @media(min-width:760px){
+    .sheet-feature{ grid-column:span 2; }
+    .sheet-feature .sheet-img{ aspect-ratio:21/9; }
+  }
   .sheet-body{ padding:20px 20px 22px; }
   .sheet-no{ font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; color:#8a7f5f; margin-bottom:6px; display:block; }
   .sheet h3{ font-size:18px; margin-bottom:8px; }
@@ -364,6 +422,7 @@
   @media(prefers-reduced-motion:reduce){
     .reveal{ opacity:1; transform:none; transition:none; }
     .stamp .dot{ animation:none; }
+    .scan-line{ display:none; }
     html{ scroll-behavior:auto; }
   }
 </style>
@@ -377,6 +436,7 @@
       <span>1st Sem Engineering · Student Studio</span>
     </a>
     <nav class="links" id="navLinks">
+      <a href="#why">Why</a>
       <a href="#services">Services</a>
       <a href="#portfolio">Portfolio</a>
       <a href="#order">Order</a>
@@ -389,9 +449,24 @@
 <main id="top">
 
   <!-- HERO -->
-  <section class="hero blueprint-bg fiducials">
+  <section class="hero blueprint-bg fiducials" style="overflow:hidden;">
     <span class="fid-tl"></span><span class="fid-tr"></span>
-    <div class="wrap">
+    <div class="scan-line"></div>
+    <div class="glow-blob" style="width:380px;height:380px;background:var(--cyan);top:-100px;left:40%;"></div>
+    <svg class="hero-deco" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <polygon points="80,140 200,80 320,140 320,260 200,320 80,260" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="80" y1="140" x2="200" y2="200" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="320" y1="140" x2="200" y2="200" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="200" y1="200" x2="200" y2="320" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M30 50 H150 V95" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="150" cy="95" r="4.5" fill="currentColor"/>
+      <path d="M370 350 H250 V300" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="250" cy="300" r="4.5" fill="currentColor"/>
+      <rect x="14" y="195" width="34" height="18" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="352" y="180" width="34" height="18" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="200" cy="200" r="3.5" fill="currentColor"/>
+    </svg>
+    <div class="wrap" style="position:relative;z-index:1;">
       <span class="stamp"><span class="dot"></span>Accepting orders this week</span>
       <h1>Your idea, rendered <em>pitch-ready.</em></h1>
       <p class="lede">Send a sketch, a schematic, or just a description. I turn it into a clean 3D CAD enclosure or PCB render your pitch deck or demo table can actually show off — flat rate, fast turnaround.</p>
@@ -406,10 +481,52 @@
     </div>
   </section>
 
+  <!-- WHY IT MATTERS -->
+  <section id="why" class="blueprint-bg" style="overflow:hidden;">
+    <div class="glow-blob" style="width:340px;height:340px;background:var(--amber);top:-100px;right:-80px;"></div>
+    <div class="wrap" style="position:relative;z-index:1;">
+      <div class="dim-divider reveal"><span class="dim-label">// 01 — Why it matters</span></div>
+      <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:22ch;margin-bottom:16px;" class="reveal">A render says what words can't.</h2>
+      <p class="section-sub reveal">Every team in the room can describe their idea. Fewer can show it. That gap is where a render earns its cost back.</p>
+
+      <div class="why-grid">
+        <div class="why-card reveal">
+          <div class="why-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-3 6 3 6H6l3-6-3-6Z"/><path d="M9 21h6"/><path d="M12 15v6"/></svg>
+          </div>
+          <h3>It adds weight</h3>
+          <p>A slide of bullet points reads like a plan. A rendered part reads like a product that already exists — judges and investors give more credit to what looks built.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><path d="M12 3c2.5 1.5 5 2 8 2a9 9 0 0 1-8 14 9 9 0 0 1-8-14c3 0 5.5-.5 8-2Z"/></svg>
+          </div>
+          <h3>It makes you look serious</h3>
+          <p>Anyone can talk through an idea. Fewer teams show up with something that looks manufactured — that's the gap between "concept" and "this team can execute."</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3>It explains for you</h3>
+          <p>Most pitches lose people in the gap between what's said and what's understood. A clear render closes that gap in one glance — which is the actual job of a pitch.</p>
+        </div>
+      </div>
+
+      <div class="callout reveal">
+        <span class="callout-tick"></span>
+        <div>
+          <p>"The best pitch isn't the one explained the most — it's the one understood the fastest."</p>
+          <cite>Why idea visualisation is the part that matters most</cite>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- SERVICES -->
   <section id="services" class="blueprint-bg">
     <div class="wrap">
-      <div class="dim-divider reveal"><span class="dim-label">// 01 — Deliverables</span></div>
+      <div class="dim-divider reveal"><span class="dim-label">// 02 — Deliverables</span></div>
       <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:20ch;margin-bottom:40px;" class="reveal">Two renders. One flat rate each.</h2>
       <div class="svc-grid">
         <div class="svc-card reveal">
@@ -441,7 +558,7 @@
   <!-- PROCESS -->
   <section class="blueprint-bg">
     <div class="wrap">
-      <div class="dim-divider reveal"><span class="dim-label">// 02 — Process</span></div>
+      <div class="dim-divider reveal"><span class="dim-label">// 03 — Process</span></div>
       <div class="process-grid">
         <div class="step reveal">
           <span class="num">01</span>
@@ -466,7 +583,7 @@
   <section id="portfolio" class="vellum-bg fiducials">
     <span class="fid-tl"></span><span class="fid-tr"></span>
     <div class="wrap">
-      <div class="dim-divider reveal"><span class="dim-label">// 03 — Portfolio</span></div>
+      <div class="dim-divider reveal"><span class="dim-label">// 04 — Portfolio</span></div>
       <h2 style="font-size:clamp(24px,3.4vw,34px);max-width:20ch;margin-bottom:40px;" class="reveal">Sheets from past jobs.</h2>
       <div class="port-grid" id="portGrid"></div>
     </div>
@@ -475,7 +592,7 @@
   <!-- ORDER -->
   <section id="order" class="blueprint-bg">
     <div class="wrap">
-      <div class="dim-divider reveal"><span class="dim-label">// 04 — Order</span></div>
+      <div class="dim-divider reveal"><span class="dim-label">// 05 — Order</span></div>
       <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:22ch;margin-bottom:40px;" class="reveal">Open a work order.</h2>
 
       <form class="ticket reveal" id="orderForm">
@@ -571,7 +688,7 @@
       title: "Mechanical Shock Absorber Assembly",
       category: "CAD Design",
       image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/shock_absorber.png",
-      blurb: "Blueprint-style presentation render built with precise multi-part constraints, clean hidden-edge removal, and ambient occlusion — the kind of asset that adds weight to a hardware pitch. Check the model <a href='https://shorturl.at/uLH0P' target='_blank' rel='noopener'>here</a>'.",
+      blurb: "Blueprint-style presentation render built with precise multi-part constraints, clean hidden-edge removal, and ambient occlusion — the kind of asset that adds weight to a hardware pitch. Check the model <a href='https://shorturl.at/uLH0P' target='_blank' rel='noopener'>here</a>.",
       tags: ["OnShape", "Moving Parts", "Pitch-ready"]
     },
     {
@@ -579,7 +696,7 @@
       title: "Piston Pump Assembly",
       category: "Mechanical Cohesion",
       image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/Water_Pump.png",
-      blurb: "Check If your idea is mechanically Coherent, and all your parts mesh together. Check the model <a href='https://shorturl.at/QUfzw' target='_blank' rel='noopener'>here</a>'.",
+      blurb: "Check if your idea is mechanically coherent, and all your parts mesh together. Check the model <a href='https://shorturl.at/QUfzw' target='_blank' rel='noopener'>here</a>.",
       tags: ["OnShape", "Pitch-Ready","Multi Part"]
     },
     {
@@ -587,7 +704,7 @@
       title: "Variable Gear Mechanism",
       category: "Cad Design",
       image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/Variable_Gear.png",
-      blurb: "Make sure that your design is of the right size and your idea is Mechanically Viable. Check the model <a href='https://shorturl.at/Dz81x' target='_blank' rel='noopener'>here</a>'.",
+      blurb: "Make sure that your design is of the right size and your idea is mechanically viable. Check the model <a href='https://shorturl.at/Dz81x' target='_blank' rel='noopener'>here</a>.",
       tags: ["OnShape", "Moving Parts", "Gears and Meshing"]
     },
     {
@@ -618,9 +735,9 @@
   ];
 
   const portGrid = document.getElementById('portGrid');
-  portfolio.forEach(item => {
+  portfolio.forEach((item, i) => {
     const el = document.createElement('div');
-    el.className = 'sheet reveal';
+    el.className = i === 0 ? 'sheet reveal sheet-feature' : 'sheet reveal';
     el.innerHTML = `
       <div class="sheet-img"><img src="${item.image}" alt="${item.title}" loading="lazy"></div>
       <div class="sheet-body">
