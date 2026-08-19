@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manipal CAD + PCB Studio — CAD & Hardware Design Services</title>
+<meta name="description" content="Flat-rate 3D CAD enclosure design, PCB layouts, and 3D hardware modeling built by a 1st-sem Manipal engineering student.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a2240;
+    --navy-mid:#123a66;
+    --navy-line:#2c5f95;
+    --cyan:#8fd6e8;
+    --cyan-dim:#5fa9c2;
+    --vellum:#ece6d6;
+    --vellum-line:#d8cfb6;
+    --ink:#111820;
+    --amber:#ff9f1c;
+    --amber-ink:#5c3a00;
+    --green-ok:#4caf6e;
+    --red-err:#e2564f;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+    --font-body:'Inter', sans-serif;
+    --radius:2px;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    font-family:var(--font-body);
+    background:var(--navy-deep);
+    color:var(--cyan);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; }
+  ::selection{ background:var(--amber); color:var(--navy-deep); }
+
+  :focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:3px;
+  }
+
+  .wrap{ max-width:1100px; margin:0 auto; padding:0 24px; }
+
+  /* ---------- blueprint grid background ---------- */
+  .blueprint-bg{
+    background-image:
+      linear-gradient(var(--navy-mid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--navy-mid) 1px, transparent 1px);
+    background-size:36px 36px;
+    background-position:-1px -1px;
+    position:relative;
+  }
+  .vellum-bg{
+    background-color:var(--vellum);
+    background-image:
+      linear-gradient(var(--vellum-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--vellum-line) 1px, transparent 1px);
+    background-size:28px 28px;
+    color:var(--ink);
+  }
+
+  /* ---------- fiducial corner marks (PCB alignment marks) ---------- */
+  .fiducials{ position:relative; }
+  .fiducials::before,.fiducials::after,
+  .fiducials .fid-tl,.fiducials .fid-tr{
+    content:"";
+    position:absolute;
+    width:22px; height:22px;
+    pointer-events:none;
+  }
+  .fiducials::before{ top:14px; left:14px; border-top:1.5px solid currentColor; border-left:1.5px solid currentColor; opacity:.55; }
+  .fiducials::after{ bottom:14px; right:14px; border-bottom:1.5px solid currentColor; border-right:1.5px solid currentColor; opacity:.55; }
+  .fiducials .fid-tl{ top:14px; right:14px; border-top:1.5px solid currentColor; border-right:1.5px solid currentColor; opacity:.55; }
+  .fiducials .fid-tr{ bottom:14px; left:14px; border-bottom:1.5px solid currentColor; border-left:1.5px solid currentColor; opacity:.55; }
+
+  /* ---------- dimension-line section dividers ---------- */
+  .dim-divider{
+    display:flex; align-items:center; gap:14px;
+    margin:0 0 46px;
+    color:var(--cyan-dim);
+  }
+  .dim-divider::before,.dim-divider::after{
+    content:""; flex:1; height:1px; background:var(--navy-line);
+    position:relative;
+  }
+  .dim-divider::before{ margin-right:0; }
+  .vellum-bg .dim-divider{ color:#8a7f5f; }
+  .vellum-bg .dim-divider::before,.vellum-bg .dim-divider::after{ background:var(--vellum-line); }
+  .dim-label{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:block;
+    margin-bottom:10px;
+  }
+
+  h1,h2,h3{ font-family:var(--font-display); font-weight:700; line-height:1.08; letter-spacing:-.01em; }
+
+  section{ padding:88px 0; position:relative; }
+  @media(max-width:640px){ section{ padding:60px 0; } }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,34,64,.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--navy-line);
+  }
+  header .bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px;
+    max-width:1100px; margin:0 auto;
+  }
+  .brand{
+    display:flex; flex-direction:column; gap:2px;
+    font-family:var(--font-mono);
+    text-decoration:none;
+    color:var(--cyan);
+  }
+  .brand strong{
+    font-family:var(--font-display);
+    font-size:17px;
+    letter-spacing:.01em;
+    color:#fff;
+  }
+  .brand span{ font-size:10px; letter-spacing:.14em; color:var(--cyan-dim); text-transform:uppercase; }
+
+  nav.links{ display:flex; gap:28px; align-items:center; }
+  nav.links a{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    text-decoration:none;
+    color:var(--cyan-dim);
+    transition:color .15s ease;
+  }
+  nav.links a:hover{ color:var(--amber); }
+  .nav-cta{
+    border:1px solid var(--amber);
+    color:var(--amber) !important;
+    padding:7px 14px;
+    border-radius:var(--radius);
+  }
+  .nav-toggle{ display:none; background:none; border:1px solid var(--navy-line); color:var(--cyan); font-family:var(--font-mono); font-size:12px; padding:8px 10px; border-radius:var(--radius); }
+  @media(max-width:720px){
+    nav.links{ display:none; }
+    .nav-toggle{ display:block; }
+    nav.links.open{
+      display:flex; flex-direction:column; align-items:flex-start; gap:16px;
+      position:absolute; top:100%; left:0; right:0;
+      background:var(--navy-deep); border-bottom:1px solid var(--navy-line);
+      padding:20px 24px;
+    }
+  }
+
+  /* ---------- hero ---------- */
+  .hero{ padding-top:90px; padding-bottom:100px; }
+  .stamp{
+    display:inline-flex; align-items:center; gap:9px;
+    border:1px solid var(--amber);
+    color:var(--amber);
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:7px 12px;
+    border-radius:20px;
+    margin-bottom:28px;
+  }
+  .stamp .dot{ width:7px; height:7px; border-radius:50%; background:var(--amber); animation:pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  .hero h1{
+    font-size:clamp(34px,6vw,60px);
+    color:#fff;
+    max-width:14ch;
+    margin-bottom:22px;
+  }
+  .hero h1 em{ font-style:normal; color:var(--cyan); }
+  .hero p.lede{
+    font-size:17px;
+    max-width:48ch;
+    color:#c7dbe8;
+    margin-bottom:34px;
+  }
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:56px; }
+  .btn{
+    font-family:var(--font-mono);
+    font-size:13px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    text-decoration:none;
+    padding:14px 22px;
+    border-radius:var(--radius);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn-primary{ background:var(--amber); color:var(--amber-ink); font-weight:600; box-shadow:0 0 0 rgba(255,159,28,0); }
+  .btn-primary:hover{ box-shadow:0 6px 18px rgba(255,159,28,.25); }
+  .btn-ghost{ border:1px solid var(--navy-line); color:var(--cyan); }
+  .btn-ghost:hover{ border-color:var(--cyan); }
+
+  .coord-readout{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--cyan-dim);
+    letter-spacing:.05em;
+    border-top:1px solid var(--navy-line);
+    padding-top:16px;
+    max-width:420px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .coord-readout b{ color:var(--cyan); font-weight:500; }
+
+  /* ---------- services ---------- */
+  .svc-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:22px; }
+  @media(max-width:720px){ .svc-grid{ grid-template-columns:1fr; } }
+  .svc-card{
+    border:1px solid var(--navy-line);
+    padding:30px 28px;
+    border-radius:var(--radius);
+    position:relative;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .svc-card:hover{ border-color:var(--cyan); transform:translateY(-3px); box-shadow:0 14px 34px rgba(143,214,232,.1); }
+  .svc-card .tag{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.1em;
+    color:var(--cyan-dim); text-transform:uppercase; margin-bottom:14px; display:block;
+  }
+  .svc-card h3{ font-size:22px; color:#fff; margin-bottom:10px; }
+  .svc-card .price{
+    font-family:var(--font-mono); font-size:26px; color:var(--amber); font-weight:600;
+    margin-bottom:16px;
+  }
+  .svc-card p{ color:#b9d0e0; font-size:14.5px; margin-bottom:20px; }
+  .spec-list{ list-style:none; border-top:1px dashed var(--navy-line); padding-top:14px; }
+  .spec-list li{
+    display:flex; justify-content:space-between;
+    font-family:var(--font-mono); font-size:12px; color:var(--cyan-dim);
+    padding:4px 0;
+  }
+  .spec-list li span:last-child{ color:var(--cyan); }
+
+  /* ---------- glow accents & decorative graphic ---------- */
+  .glow-blob{
+    position:absolute; border-radius:50%; filter:blur(90px);
+    opacity:.22; pointer-events:none; z-index:0;
+  }
+  .hero-deco{
+    position:absolute; right:-30px; top:50%; transform:translateY(-50%);
+    width:380px; height:380px; color:var(--cyan); opacity:.16;
+    pointer-events:none; z-index:0;
+  }
+  @media(max-width:980px){ .hero-deco{ display:none; } }
+
+  .scan-line{
+    position:absolute; left:0; right:0; height:1px; top:0;
+    background:linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity:.5; animation:scan 6s linear infinite; pointer-events:none; z-index:0;
+  }
+  @keyframes scan{ 0%{ top:0%; } 100%{ top:100%; } }
+
+  .hero h1 em{
+    background:linear-gradient(90deg,var(--cyan),#dff5fb);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .btn-primary{ box-shadow:0 0 26px rgba(255,159,28,.16); }
+  .btn-primary:hover{ box-shadow:0 10px 28px rgba(255,159,28,.32); }
+
+  /* ---------- why design matters ---------- */
+  .section-sub{ font-size:15.5px; color:#a9c4d6; max-width:55ch; margin-bottom:40px; }
+  .why-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-bottom:44px; position:relative; z-index:1; }
+  @media(max-width:760px){ .why-grid{ grid-template-columns:1fr; } }
+  .why-card{
+    border:1px solid var(--navy-line); padding:28px 26px; border-radius:var(--radius);
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .why-card:hover{ border-color:var(--cyan); transform:translateY(-3px); box-shadow:0 14px 34px rgba(143,214,232,.1); }
+  .why-icon{
+    width:42px; height:42px; border:1px solid var(--amber); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--amber); margin-bottom:18px;
+  }
+  .why-icon svg{ width:20px; height:20px; }
+  .why-card h3{ font-size:18px; color:#fff; margin-bottom:10px; }
+  .why-card p{ font-size:14px; color:#b9d0e0; }
+
+  .callout{
+    display:flex; gap:16px; align-items:flex-start;
+    border-top:1px dashed var(--navy-line); padding-top:26px; position:relative; z-index:1;
+  }
+  .callout-tick{ width:26px; height:1px; background:var(--amber); margin-top:14px; flex-shrink:0; }
+  .callout p{ font-family:var(--font-display); font-size:clamp(18px,2.4vw,22px); color:#fff; max-width:44ch; line-height:1.35; }
+  .callout cite{ display:block; font-style:normal; font-family:var(--font-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan-dim); margin-top:12px; }
+
+  /* ---------- process ---------- */
+  .process-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  @media(max-width:760px){ .process-grid{ grid-template-columns:1fr; } }
+  .step{ border-left:1px solid var(--navy-line); padding-left:20px; }
+  .step .num{ font-family:var(--font-mono); color:var(--amber); font-size:13px; margin-bottom:10px; display:block; }
+  .step h3{ font-size:18px; color:#fff; margin-bottom:8px; }
+  .step p{ font-size:14px; color:#b9d0e0; }
+
+  /* ---------- portfolio (vellum) ---------- */
+  #portfolio .wrap > .dim-divider{ margin-top:0; }
+  .port-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; }
+  .sheet{
+    background:#f6f2e6;
+    border:1px solid var(--vellum-line);
+    position:relative;
+  }
+  .sheet{ transition:transform .2s ease, box-shadow .2s ease; }
+  .sheet:hover{ transform:translateY(-3px); box-shadow:0 14px 30px rgba(0,0,0,.12); }
+  .sheet-img{ aspect-ratio:4/5; overflow:hidden; border-bottom:1px solid var(--vellum-line); background:#e3ddc9; }
+  .sheet-img img{ width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+  .sheet:hover .sheet-img img{ transform:scale(1.045); }
+  @media(min-width:760px){
+    .sheet-feature{ grid-column:span 2; }
+    .sheet-feature .sheet-img{ aspect-ratio:21/9; }
+  }
+  .sheet-body{ padding:20px 20px 22px; }
+  .sheet-no{ font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; color:#8a7f5f; margin-bottom:6px; display:block; }
+  .sheet h3{ font-size:18px; margin-bottom:8px; }
+  .sheet p{ font-size:13.5px; color:#494332; margin-bottom:14px; }
+  .sheet-tags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .sheet-tags span{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.04em;
+    border:1px solid #b9ae8d; color:#5c5333; padding:3px 8px; text-transform:uppercase;
+  }
+  .sheet-empty{
+    border:1px dashed var(--vellum-line);
+    display:flex; align-items:center; justify-content:center;
+    min-height:220px; text-align:center; padding:24px;
+  }
+  .sheet-empty p{ font-family:var(--font-mono); font-size:12.5px; color:#8a7f5f; line-height:1.7; }
+
+  /* ---------- order (work-order ticket) ---------- */
+  .ticket{
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    border:1px solid var(--navy-line);
+    background:var(--navy-mid);
+  }
+  @media(max-width:760px){ .ticket{ grid-template-columns:1fr; } }
+
+  .ticket-form{ padding:36px; }
+  .ticket-stub{
+    padding:36px 30px;
+    background:rgba(0,0,0,.15);
+    border-left:1px dashed var(--navy-line);
+    display:flex; flex-direction:column;
+    justify-content:space-between;
+  }
+  @media(max-width:760px){
+    .ticket-stub{ border-left:none; border-top:1px dashed var(--navy-line); }
+  }
+
+  .field{ margin-bottom:20px; }
+  .field label{
+    display:block; font-family:var(--font-mono); font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--cyan-dim); margin-bottom:8px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    background:var(--navy-deep);
+    border:1px solid var(--navy-line);
+    color:#fff;
+    font-family:var(--font-body);
+    font-size:14.5px;
+    padding:12px 13px;
+    border-radius:var(--radius);
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:#5b7a95; }
+  .field textarea{ resize:vertical; min-height:110px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:500px){ .field-row{ grid-template-columns:1fr; } }
+  .hp{ position:absolute; left:-9999px; opacity:0; }
+
+  .stub-label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:var(--cyan-dim); text-transform:uppercase; margin-bottom:6px; }
+  .stub-value{ font-family:var(--font-display); font-size:22px; color:#fff; margin-bottom:22px; }
+  .stub-price{ font-family:var(--font-mono); font-size:34px; color:var(--amber); font-weight:600; }
+  .stub-note{ font-size:13px; color:#a9c4d6; margin-top:18px; line-height:1.6; }
+  .stub-whatsapp{ margin-top:22px; }
+
+  #formMsg{ margin-top:16px; font-family:var(--font-mono); font-size:13px; display:none; padding:12px 14px; border-radius:var(--radius); }
+  #formMsg.ok{ display:block; background:rgba(76,175,110,.12); color:var(--green-ok); border:1px solid var(--green-ok); }
+  #formMsg.err{ display:block; background:rgba(226,86,79,.12); color:var(--red-err); border:1px solid var(--red-err); }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--navy-line); padding:40px 0; }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  footer p{ font-family:var(--font-mono); font-size:12px; color:var(--cyan-dim); }
+  footer .foot-links{ display:flex; gap:20px; }
+  footer a{ font-family:var(--font-mono); font-size:12px; text-decoration:none; color:var(--cyan-dim); }
+  footer a:hover{ color:var(--amber); }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(16px); transition:opacity .5s ease, transform .5s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  @media(prefers-reduced-motion:reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .stamp .dot{ animation:none; }
+    .scan-line{ display:none; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="#top" class="brand">
+      <strong>MANIPAL CAD+PCB STUDIO</strong>
+      <span>1st Sem Engineering · Student Studio</span>
+    </a>
+    <nav class="links" id="navLinks">
+      <a href="#why">Why Design</a>
+      <a href="#services">Services</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#order">Order</a>
+      <a href="#order" class="nav-cta">Start a project</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">MENU</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero blueprint-bg fiducials" style="overflow:hidden;">
+    <span class="fid-tl"></span><span class="fid-tr"></span>
+    <div class="scan-line"></div>
+    <div class="glow-blob" style="width:380px;height:380px;background:var(--cyan);top:-100px;left:40%;"></div>
+    <svg class="hero-deco" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <polygon points="80,140 200,80 320,140 320,260 200,320 80,260" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="80" y1="140" x2="200" y2="200" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="320" y1="140" x2="200" y2="200" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="200" y1="200" x2="200" y2="320" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M30 50 H150 V95" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="150" cy="95" r="4.5" fill="currentColor"/>
+      <path d="M370 350 H250 V300" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="250" cy="300" r="4.5" fill="currentColor"/>
+      <rect x="14" y="195" width="34" height="18" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="352" y="180" width="34" height="18" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="200" cy="200" r="3.5" fill="currentColor"/>
+    </svg>
+    <div class="wrap" style="position:relative;z-index:1;">
+      <span class="stamp"><span class="dot"></span>Accepting projects this week</span>
+      <h1>Your ideas, engineered <em>for reality.</em></h1>
+      <p class="lede">Send a sketch or schematic. Get back a precise 3D CAD model or PCB layout. Built for perfect fit, form, and function.</p>
+      <div class="cta-row">
+        <a href="#order" class="btn btn-primary">Start a project →</a>
+        <a href="https://wa.me/916379453804" target="_blank" rel="noopener" class="btn btn-ghost">💬 Message on WhatsApp</a>
+      </div>
+      <div class="coord-readout">
+        <span>CURSOR&nbsp; X:<b id="cx">000</b>&nbsp; Y:<b id="cy">000</b></span>
+        <span>STUDIO STATUS: <b>OPEN</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY DESIGN MATTERS -->
+  <section id="why" class="blueprint-bg" style="overflow:hidden;">
+    <div class="glow-blob" style="width:340px;height:340px;background:var(--amber);top:-100px;right:-80px;"></div>
+    <div class="wrap" style="position:relative;z-index:1;">
+      <div class="dim-divider reveal"><span class="dim-label">// 01 — Why Design Matters</span></div>
+      <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:24ch;margin-bottom:16px;" class="reveal">Design makes it viable.</h2>
+      <p class="section-sub reveal">It's not just how it looks. It's how it works, fits together, and gets manufactured.</p>
+
+      <div class="why-grid">
+        <div class="why-card reveal">
+          <div class="why-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-3 6 3 6H6l3-6-3-6Z"/><path d="M9 21h6"/><path d="M12 15v6"/></svg>
+          </div>
+          <h3>Perfect Fit</h3>
+          <p>Ensure components, tolerances, and mechanisms mesh seamlessly before you ever touch a 3D printer.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><path d="M12 3c2.5 1.5 5 2 8 2a9 9 0 0 1-8 14 9 9 0 0 1-8-14c3 0 5.5-.5 8-2Z"/></svg>
+          </div>
+          <h3>Zero Surprises</h3>
+          <p>Catch clearance clashes and routing errors early. Save your time and your fabrication budget.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3>Crystal Clear Specs</h3>
+          <p>Communicate your exact design intent to your team or manufacturer without any ambiguity.</p>
+        </div>
+      </div>
+
+      <div class="callout reveal">
+        <span class="callout-tick"></span>
+        <div>
+          <p>"Good design isn't just what it looks like. Design is how it works."</p>
+          <cite>The core principle of hardware engineering</cite>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- PORTFOLIO -->
+  <section id="portfolio" class="vellum-bg fiducials">
+    <span class="fid-tl"></span><span class="fid-tr"></span>
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 04 — Portfolio</span></div>
+      <h2 style="font-size:clamp(24px,3.4vw,34px);max-width:20ch;margin-bottom:40px;" class="reveal">Recent Studio Work.</h2>
+      <div class="port-grid" id="portGrid"></div>
+    </div>
+  </section>
+  <!-- SERVICES -->
+  <section id="services" class="blueprint-bg">
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 02 — Design Services</span></div>
+      <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:22ch;margin-bottom:40px;" class="reveal">Visualise and build.</h2>
+      <div class="svc-grid">
+        <div class="svc-card reveal">
+          <span class="tag">Mechanical & Industrial</span>
+          <h3>CAD & Enclosure Design</h3>
+          <div class="price">₹150</div>
+          <p>Rough sketches become precise 3D models. Perfect for IoT enclosures, robotics, and custom mechanical parts.</p>
+          <ul class="spec-list">
+            <li><span>Deliverables</span><span>STEP files, 3D Renders</span></li>
+            <li><span>Turnaround</span><span>24–48 hrs</span></li>
+            <li><span>Revisions</span><span>1 included</span></li>
+          </ul>
+        </div>
+        <div class="svc-card reveal">
+          <span class="tag">Electronics & Circuitry</span>
+          <h3>PCB Schematic & Layout</h3>
+          <div class="price">₹150</div>
+          <p>Circuit diagrams become production-ready board layouts and stunning 3D component models.</p>
+          <ul class="spec-list">
+            <li><span>Deliverables</span><span>KiCad files, 3D PCB models</span></li>
+            <li><span>Turnaround</span><span>24–48 hrs</span></li>
+            <li><span>Revisions</span><span>1 included</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="blueprint-bg">
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 03 — Process</span></div>
+      <div class="process-grid">
+        <div class="step reveal">
+          <span class="num">01</span>
+          <h3>Send the specs</h3>
+          <p>Share a sketch, schematic, or a quick project brief via the form below or on WhatsApp.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">02</span>
+          <h3>Studio models it</h3>
+          <p>I build the 3D model or board layout, focusing heavily on spatial logic and structural integrity.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">03</span>
+          <h3>Get it back</h3>
+          <p>Final deliverables, renders, and source files land directly in your inbox, ready for production.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- ORDER -->
+  <section id="order" class="blueprint-bg">
+    <div class="wrap">
+      <div class="dim-divider reveal"><span class="dim-label">// 05 — Start a Project</span></div>
+      <h2 style="color:#fff;font-size:clamp(24px,3.4vw,34px);max-width:22ch;margin-bottom:40px;" class="reveal">Open a request.</h2>
+
+      <form class="ticket reveal" id="orderForm">
+        <div class="ticket-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input type="text" id="name" name="name" placeholder="Full name" required>
+            </div>
+            <div class="field">
+              <label for="contact">Email or WhatsApp number</label>
+              <input type="text" id="contact" name="contact" placeholder="you@example.com or +91…" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="service">What do you need?</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Select a service</option>
+              <option value="CAD Enclosure Design">CAD & Enclosure Design — ₹150</option>
+              <option value="PCB Schematic & Layout">PCB Schematic & Layout — ₹150</option>
+              <option value="Not sure yet">Not sure yet — help me decide</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="idea">Describe your project</label>
+            <textarea id="idea" name="idea" placeholder="What are you building? Dimensions, constraints, ideas — keep it brief." required></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="deadline">Target Timeline (optional)</label>
+              <input type="date" id="deadline" name="deadline">
+            </div>
+            <div class="field">
+              <label for="reference">Reference Link (optional)</label>
+              <input type="url" id="reference" name="reference" placeholder="Drive folder, sketch, schematic…">
+            </div>
+          </div>
+
+          <!-- honeypot -->
+          <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off">
+
+          <button type="submit" class="btn btn-primary" id="submitBtn" style="border:none;cursor:pointer;">Submit design request →</button>
+          <div id="formMsg"></div>
+        </div>
+
+        <div class="ticket-stub">
+          <div>
+            <div class="stub-label">Service</div>
+            <div class="stub-value" id="stubService">—</div>
+            <div class="stub-label">Base Rate</div>
+            <div class="stub-price" id="stubPrice">₹150</div>
+          </div>
+          <div>
+            <p class="stub-note">Flat rate per design module. Project scope is confirmed after review — no automatic charges.</p>
+            <div class="stub-whatsapp">
+              <a href="https://wa.me/916379453804" target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%;justify-content:center;">💬 Or discuss on WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="blueprint-bg">
+  <div class="wrap">
+    <p>Independent student design studio · Manipal · Not affiliated with the institute</p>
+    <div class="foot-links">
+      <a href="https://wa.me/916379453804" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#order">Start a Project</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* =========================================================
+     CONFIG — edit these two lines
+  ========================================================= */
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLI2Yg4iEPWzML0e08xMnuJmHYrsnq1OmHSdmY2JGGvukucHWNZgieQ66jc62FCIbJqA/exec";
+
+  /* =========================================================
+     PORTFOLIO — add a new work by adding an object here.
+  ========================================================= */
+  const portfolio = [
+    {
+      sheetNo: "SHEET 01",
+      title: "Piston Pump Assembly",
+      category: "Mechanical Engineering",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/Water_Pump.png",
+      blurb: "Validate mechanical coherence, moving parts, and functional fit. Inspect model <a href='https://shorturl.at/QUfzw' target='_blank' rel='noopener'>here</a>.",
+      tags: ["OnShape", "3D CAD Modeling", "Multi-Part Assembly"]
+    },
+
+    {
+      sheetNo: "SHEET 02",
+      title: "Mechanical Shock Absorber Assembly",
+      category: "CAD Design",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/shock_absorber.png",
+      blurb: "Precise multi-part constraints and movement tolerances for structural analysis. Inspect model <a href='https://shorturl.at/uLH0P' target='_blank' rel='noopener'>here</a>.",
+      tags: ["OnShape", "Dynamic Parts", "Mechanical Design"]
+    },
+    {
+      sheetNo: "SHEET 03",
+      title: "Variable Gear Mechanism",
+      category: "Kinematic CAD Design",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/Variable_Gear.png",
+      blurb: "Kinematic design for perfect meshing and smooth mechanical transmission. Inspect model <a href='https://shorturl.at/Dz81x' target='_blank' rel='noopener'>here</a>.",
+      tags: ["OnShape", "Kinematics", "Gears and Meshing"]
+    },
+    {
+      sheetNo: "SHEET 04",
+      title: "LED Matrix Schematics",
+      category: "Schematic Design",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/LED_Schematic.png",
+      blurb: "Clean, readable technical schematics to evaluate signal flow and circuit logic.",
+      tags: ["KiCad", "Schematic Design", "Circuit Logic"]
+    },
+
+    {
+      sheetNo: "SHEET 05",
+      title: "LED Matrix Layout",
+      category: "Component Layout",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/LED_Layout.png",
+      blurb: "Functional physical PCB layouts with proper component spacing and trace routing.",
+      tags: ["KiCad", "Hardware Layout", "Trace Routing"]
+    },
+    {
+      sheetNo: "SHEET 06",
+      title: "LED Matrix PCB 3D Model",
+      category: "PCB Design",
+      image: "https://jayammodi2008.github.io/MANIPAL-CAD-PCB-SERVICE/LED_PCB.jpeg",
+      blurb: "3D board integration to ensure spatial clearance inside custom enclosures.",
+      tags: ["KiCad", "Component Visualisation", "3D PCB Integration"]
+    },
+  ];
+
+  const portGrid = document.getElementById('portGrid');
+  portfolio.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = i === 0 ? 'sheet reveal sheet-feature' : 'sheet reveal';
+    el.innerHTML = `
+      <div class="sheet-img"><img src="${item.image}" alt="${item.title}" loading="lazy"></div>
+      <div class="sheet-body">
+        <span class="sheet-no">${item.sheetNo} · ${item.category}</span>
+        <h3>${item.title}</h3>
+        <p>${item.blurb}</p>
+        <div class="sheet-tags">${item.tags.map(t => `<span>${t}</span>`).join('')}</div>
+      </div>`;
+    portGrid.appendChild(el);
+  });
+  const emptySlot = document.createElement('div');
+  emptySlot.className = 'sheet sheet-empty reveal';
+  emptySlot.innerHTML = `<p>MORE SHEETS<br>ADDED AS PROJECTS<br>ARE COMPLETED</p>`;
+  portGrid.appendChild(emptySlot);
+
+  /* ---------- mobile nav ---------- */
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+  });
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+  /* ---------- coordinate readout ---------- */
+  const cx = document.getElementById('cx');
+  const cy = document.getElementById('cy');
+  const heroSection = document.querySelector('.hero');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches === false) {
+    heroSection.addEventListener('mousemove', e => {
+      const r = heroSection.getBoundingClientRect();
+      cx.textContent = String(Math.max(0, Math.round(e.clientX - r.left))).padStart(3,'0');
+      cy.textContent = String(Math.max(0, Math.round(e.clientY - r.top))).padStart(3,'0');
+    });
+  }
+
+  /* ---------- scroll reveal ---------- */
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+
+  /* ---------- live ticket stub ---------- */
+  const serviceSelect = document.getElementById('service');
+  const stubService = document.getElementById('stubService');
+  const stubPrice = document.getElementById('stubPrice');
+  const priceMap = {
+    "CAD Enclosure Design": "₹150",
+    "PCB Schematic & Layout": "₹150",
+    "Not sure yet": "TBD"
+  };
+  serviceSelect.addEventListener('change', () => {
+    stubService.textContent = serviceSelect.value || "—";
+    stubPrice.textContent = priceMap[serviceSelect.value] || "₹150";
+  });
+
+  /* ---------- order form submit ---------- */
+  const form = document.getElementById('orderForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // honeypot check
+    if (form.company.value) return;
+
+    const payload = {
+      name: form.name.value.trim(),
+      contact: form.contact.value.trim(),
+      service: form.service.value,
+      idea: form.idea.value.trim(),
+      deadline: form.deadline.value,
+      reference: form.reference.value.trim(),
+      submittedAt: new Date().toISOString()
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending…";
+    formMsg.className = ''; formMsg.style.display = 'none';
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+
+      formMsg.textContent = "Project request received — I'll get back to you soon.";
+      formMsg.className = 'ok';
+      form.reset();
+      stubService.textContent = "—";
+      stubPrice.textContent = "₹150";
+    } catch (err) {
+      formMsg.textContent = "Something went wrong. Please message on WhatsApp instead.";
+      formMsg.className = 'err';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit design request →";
+    }
+  });
+</script>
+</body>
+</html>
